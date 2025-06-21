@@ -1,2 +1,2 @@
 # unillm
-a llm model for unity
+a framework to use llm for unity
