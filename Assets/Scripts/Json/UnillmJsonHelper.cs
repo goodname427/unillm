@@ -20,17 +20,25 @@ namespace unillm
 
             if (data.IsDouble && (type == typeof(double) || type == typeof(float)))
             {
-                return data.AsDouble;
+                return Convert.ChangeType(data.AsDouble, type);
             }
 
             if (data.IsInt64 && (type == typeof(long) || type == typeof(int)))
             {
-                return data.AsInt64;
+                return Convert.ChangeType(data.AsInt64, type);
             }
 
             if (data.IsString && type == typeof(string))
             {
                 return data.AsString;
+            }
+
+            if (data.IsString && typeof(Enum).IsAssignableFrom(type))
+            {
+                if (Enum.TryParse(type, data.AsString, true, out var result))
+                {
+                    return result;
+                }
             }
 
             if (data.IsList && typeof(IList).IsAssignableFrom(type))
@@ -132,14 +140,14 @@ namespace unillm
                 return new fsData(boolObj);
             }
 
-            if (obj is double doubleObj)
-            {
-                return new fsData(doubleObj);
-            }
-
             if (obj is float floatObj)
             {
                 return new fsData(floatObj);
+            }
+
+            if (obj is double doubleObj)
+            {
+                return new fsData(doubleObj);
             }
 
             if (obj is int intObj)
@@ -155,6 +163,11 @@ namespace unillm
             if (obj is string stringObj)
             {
                 return new fsData(stringObj);
+            }
+
+            if (obj is Enum)
+            {
+                return new fsData(Enum.GetName(obj.GetType(), obj));
             }
 
             if (obj is IList listObj)

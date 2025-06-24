@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace unillm.Example.E001
+namespace unillm.Example
 {
     public class E001_HelloWorld : MonoBehaviour
     {
@@ -20,6 +20,7 @@ namespace unillm.Example.E001
         void Start()
         {
             _agent = new();
+            _agent.Init();
 
             _agent.OnReceivedMessage += OnReceivedMessage;
 
@@ -46,7 +47,7 @@ namespace unillm.Example.E001
             _agent.Send(message);
         }
 
-        private void OnReceivedMessage(IUnillmAgent agent, OnReceivedMessageEventArgs args)
+        private void OnReceivedMessage(IUnillmAgent agent, UnillmOnAgentReceivedMessageEventArgs args)
         {
             Debug.Log(args.Message.Content);
             PushMessage(args.Message);

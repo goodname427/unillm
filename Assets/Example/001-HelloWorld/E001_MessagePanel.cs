@@ -1,8 +1,7 @@
-using System;
 using TMPro;
 using UnityEngine;
 
-namespace unillm.Example.E001
+namespace unillm.Example
 {
     public class E001_MessagePanel : MonoBehaviour
     {

@@ -16,21 +16,25 @@ namespace unillm
 
     public sealed class UnillmCommmonAgent : IUnillmAgent
     {
+        public event UnillmOnAgentReceivedMessageEventHandler OnReceivedMessage;
+
         private readonly HttpClient _httpClient = new();
 
         private UnillmCommonAgentModelConfig _config;
 
         private readonly List<UnillmMessage> _context = new();
 
+        public bool HasInit { get; private set; } = false;
+
+        public bool IsPending { get; private set; } = false;
+
         public UnillmMessage[] Context => _context.ToArray();
 
-        public event OnReceivedMessageEventHandler OnReceivedMessage;
-
-        public UnillmCommmonAgent(string systemPropmt = null) : this(new UnillmCommonAgentModelConfig(), systemPropmt)
+        public UnillmCommmonAgent() : this(new UnillmCommonAgentModelConfig())
         {
         }
 
-        public UnillmCommmonAgent(UnillmCommonAgentModelConfig config, string systemPropmt = null)
+        public UnillmCommmonAgent(UnillmCommonAgentModelConfig config)
         {
             _config = config;
 
@@ -43,12 +47,17 @@ namespace unillm
             // …Ë÷√«Î«ÛÕ∑
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _config.Key);
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        }
 
-            if (string.IsNullOrEmpty(systemPropmt))
+        public void Init(string systemPropmt = "you are a helpful assitant.")
+        {
+            if (HasInit)
             {
-                systemPropmt = "you are a helpful assitant";
+                UnillmLogger.Warrning("Agent has init");
+                return;
             }
 
+            HasInit = true;
             PushMessage(UnillmMessage.MakeSystemMessage(systemPropmt));
         }
 
@@ -57,6 +66,18 @@ namespace unillm
             if (_config is null)
             {
                 UnillmLogger.Warrning($"Config is null");
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(_config.URL))
+            {
+                UnillmLogger.Warrning("Config url is empty");
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(_config.Key))
+            {
+                UnillmLogger.Warrning("Config key is empty");
                 return false;
             }
 
@@ -90,34 +111,40 @@ namespace unillm
                 if (receivedMessage is not null)
                 {
                     PushMessage(receivedMessage);
-                    OnReceivedMessage?.Invoke(this, new OnReceivedMessageEventArgs()
+                    OnReceivedMessage?.Invoke(this, new UnillmOnAgentReceivedMessageEventArgs()
                     {
                         Message = receivedMessage
                     });
                 }
                 else
                 {
-                    UnillmLogger.Error($"Received none message");
+                    UnillmLogger.Error($"Received a none message");
                 }
             }
             else
             {
-                UnillmLogger.Error($"Request Failed: {response.StatusCode}");
+                UnillmLogger.Error($"Request failed {response.StatusCode}");
             }
+
+            IsPending = false;
         }
 
         public bool Send(UnillmMessage messageToSend)
         {
-            return Send(new UnillmMessage[] { messageToSend });
-        }
-
-        public bool Send(IEnumerable<UnillmMessage> messagesToSend)
-        {
-            foreach (var message in messagesToSend)
+            if (!HasInit)
             {
-                PushMessage(message);
+                UnillmLogger.Warrning("Agent has not init");
+                return false;
             }
 
+            if (IsPending)
+            {
+                UnillmLogger.Warrning("Agent is pending");
+                return false;
+            }
+
+            IsPending = true;
+            PushMessage(messageToSend);
             _ = InternalSend();
             return true;
         }

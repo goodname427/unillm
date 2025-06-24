@@ -1,5 +1,5 @@
 using System;
-using UnityEngine;
+using System.Text.RegularExpressions;
 
 namespace unillm
 {
@@ -52,6 +52,21 @@ namespace unillm
         public static UnillmMessage MakeAssistantMessage(string content)
         {
             return new UnillmMessage("assistant", content);
+        }
+
+        /// <summary>
+        /// 将Content转为指定对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public T Get<T>() where T : new()
+        {
+            string pattern = @"^```json\s*|\s*```$";
+
+            // 过滤可能的代码包围块
+            string cleanJson = Regex.Replace(Content, pattern, "", RegexOptions.Multiline);
+
+            return UnillmJsonHelper.ToObject<T>(cleanJson.Trim());
         }
     }
 }
