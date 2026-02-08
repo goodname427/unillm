@@ -2,14 +2,13 @@ using System;
 
 namespace unillm
 {
-    // 任务执行的参数
     public class UnillmOnBodyDoEventArgs : EventArgs
     {
         
     }
 
     /// <summary>
-    /// 用于人类执行行动
+    /// 能够执行某种任务
     /// </summary>
     public interface IUnillmBody
     {

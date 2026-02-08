@@ -2,26 +2,24 @@ using System.Collections.Generic;
 
 namespace unillm
 {
-    public interface IUnillmHuman
+    public abstract class UnillmHuman<TInput, TOutput> : IUnillmHuman<TInput, TOutput> where TInput : new() where TOutput : new()
     {
-    }
-
-    public abstract class UnillmHuman<TInput, TOutput, TBrain> : IUnillmHuman where TBrain : UnillmBrain<TInput, TOutput> where TInput : new() where TOutput : new()
-    {
-        private TBrain _brain;
-        public TBrain Brain
+        private IUnillmBrain<TInput, TOutput> _brain;
+        public IUnillmBrain<TInput, TOutput> Brain
         {
             get { return _brain; }
         }
 
-        private readonly List<IUnillmSense> _unillmSenses;
+        private readonly List<IUnillmSense> _senses;
+        public IReadOnlyList<IUnillmSense> Senses => _senses;
 
-        private readonly List<IUnillmBody> _unillmBodies;
+        private readonly List<IUnillmBody> _bodies;
+        public IReadOnlyList<IUnillmBody> Bodies => _bodies; 
 
         public UnillmHuman()
         {
-            _unillmSenses = new List<IUnillmSense>();
-            _unillmBodies = new List<IUnillmBody>();
+            _senses = new List<IUnillmSense>();
+            _bodies = new List<IUnillmBody>();
         }
 
         public virtual void Init()
@@ -34,18 +32,18 @@ namespace unillm
 
             _brain.OnThinkCompleted += OnThinkCompleted;
 
-            _unillmSenses.Clear();
+            _senses.Clear();
             foreach (var sense in CollectSenses())
             {
-                _unillmSenses.Add(sense);
+                _senses.Add(sense);
                 sense.OnSensed += OnSensed;
                 sense.OnEquiped(this);
             }
 
-            _unillmBodies.Clear();
+            _bodies.Clear();
             foreach (var body in CollectBodies())
             {
-                _unillmBodies.Add(body);
+                _bodies.Add(body);
             }
         }
 
@@ -53,25 +51,25 @@ namespace unillm
         {
             _brain.OnThinkCompleted -= OnThinkCompleted;
 
-            foreach (var sense in _unillmSenses)
+            foreach (var sense in _senses)
             {
                 sense.OnSensed -= OnSensed;
                 sense.OnUnequiped(this);
             }
-            _unillmSenses.Clear();
+            _senses.Clear();
 
-            foreach (var sense in _unillmBodies)
+            foreach (var sense in _bodies)
             {
 
             }
-            _unillmSenses.Clear();
+            _senses.Clear();
         }
 
         /// <summary>
         /// 收集大脑
         /// </summary>
         /// <returns></returns>
-        protected abstract TBrain MakeBrain();
+        protected abstract IUnillmBrain<TInput, TOutput> MakeBrain();
 
         /// <summary>
         /// 收集该Human所拥有的所有Sense
@@ -97,6 +95,6 @@ namespace unillm
         /// </summary>
         /// <param name="brain"></param>
         /// <param name="args"></param>
-        protected abstract void OnThinkCompleted(UnillmBrain<TInput, TOutput> brain, UnillmOnBrainThinkCompletedEventArgs<TInput, TOutput> args);
+        protected abstract void OnThinkCompleted(UnillmCommonBrain<TInput, TOutput> brain, UnillmOnBrainThinkCompletedEventArgs<TInput, TOutput> args);
     }
 }

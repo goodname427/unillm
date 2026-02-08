@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace unillm.Example
 {
-    public class E003_Human_Sense : MonoBehaviour, IUnillmSense
+    public class E003_Sense : MonoBehaviour, IUnillmSense
     {
         private class Input
         {
@@ -20,7 +20,7 @@ namespace unillm.Example
             public List<string> Result = new();
         }
 
-        private class E003_Human_Sense_Human : UnillmHuman<Input, Output, UnillmBrain<Input, Output>>
+        private class Human : UnillmHuman<Input, Output>
         {
             private Input _input = new();
 
@@ -36,9 +36,9 @@ namespace unillm.Example
                 return UnillmSenses;
             }
 
-            protected override UnillmBrain<Input, Output> MakeBrain()
+            protected override IUnillmBrain<Input, Output> MakeBrain()
             {
-                return new UnillmBrain<Input, Output>("你是一个聪明的机器人，能够按照我的要求正确输出结果。接下来我会给你一个时间戳，请你返回时间戳对应的时间");
+                return new UnillmCommonBrain<Input, Output>("你是一个聪明的机器人，能够按照我的要求正确输出结果。接下来我会给你一个时间戳，请你返回时间戳对应的时间");
             }
 
             protected override void OnSensed(IUnillmSense sense, UnillmOnSensedEventArgs args)
@@ -53,7 +53,7 @@ namespace unillm.Example
                 }
             }
 
-            protected override void OnThinkCompleted(UnillmBrain<Input, Output> brain, UnillmOnBrainThinkCompletedEventArgs<Input, Output> args)
+            protected override void OnThinkCompleted(UnillmCommonBrain<Input, Output> brain, UnillmOnBrainThinkCompletedEventArgs<Input, Output> args)
             {
                 var builder = new StringBuilder();
                 for (int i = 0; i < args.Input.Timestaps.Count; i++)
@@ -66,11 +66,11 @@ namespace unillm.Example
 
         public event OnUnillmSensedEventHandler OnSensed;
 
-        private E003_Human_Sense_Human _human;
+        private Human _human;
 
         void Start()
         {
-            _human = new E003_Human_Sense_Human();
+            _human = new Human();
             _human.UnillmSenses.Add(this);
             _human.Init();
 
@@ -88,16 +88,6 @@ namespace unillm.Example
             OnSensed?.Invoke(this, args);
 
             StartCoroutine(Ticker());
-        }
-
-        public void OnEquiped(IUnillmHuman human)
-        {
-            
-        }
-
-        public void OnUnequiped(IUnillmHuman human)
-        {
-            
         }
     }
 }

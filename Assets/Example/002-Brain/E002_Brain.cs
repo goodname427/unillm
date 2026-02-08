@@ -73,11 +73,11 @@ namespace unillm.Example
         [SerializeField]
         private Button _thinkButton;
 
-        private UnillmBrain<Input, Output> _brain;
+        private UnillmCommonBrain<Input, Output> _brain;
 
         public void Start()
         {
-            _brain = new UnillmBrain<Input, Output>("你是一个聪明的计算器，能够按照我的要求正确输出结果。接下来我会给你一个题目，请你返回题目的结果。涉及到文本的地方请使用英语");
+            _brain = new UnillmCommonBrain<Input, Output>("你是一个聪明的计算器，能够按照我的要求正确输出结果。接下来我会给你一个题目，请你返回题目的结果。涉及到文本的地方请使用英语");
 
             _brain.OnThinkCompleted += OnThinkCompleted;
 
@@ -98,7 +98,7 @@ namespace unillm.Example
             _brain.Think(input);
         }
 
-        private void OnThinkCompleted(UnillmBrain<Input, Output> brain, UnillmOnBrainThinkCompletedEventArgs<Input, Output> args)
+        private void OnThinkCompleted(UnillmCommonBrain<Input, Output> brain, UnillmOnBrainThinkCompletedEventArgs<Input, Output> args)
         {
             Debug.Log(args.Output);
 

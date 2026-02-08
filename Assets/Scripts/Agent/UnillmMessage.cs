@@ -3,6 +3,9 @@ using System.Text.RegularExpressions;
 
 namespace unillm
 {
+    /// <summary>
+    /// 记录Agent的消息
+    /// </summary>
     [System.Serializable]
     public class UnillmMessage
     {

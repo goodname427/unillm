@@ -2,23 +2,12 @@ using System;
 
 namespace unillm
 {
-    public class UnillmOnBrainThinkCompletedEventArgs<TInput, TOutput> : UnillmFuctionalEventArgs
-    {
-        public TInput Input { get; set; }
-        public TOutput Output { get; set; }
-    }
-
-    public delegate void UnillmOnBrainThinkCompletedEventHandler<TInput, TOutput>(
-        UnillmBrain<TInput, TOutput> brain, 
-        UnillmOnBrainThinkCompletedEventArgs<TInput, TOutput> args) 
-        where TInput : new() where TOutput : new();
-
     /// <summary>
-    /// 接受特定对象输入和产生特定对象输出以及存储记忆
+    /// 通用的Brain，提供一个较为通用的解决方案
     /// </summary>
     /// <typeparam name="TInput"></typeparam>
     /// <typeparam name="TOutput"></typeparam>
-    public class UnillmBrain<TInput, TOutput> where TInput : new() where TOutput : new()
+    public class UnillmCommonBrain<TInput, TOutput> : IUnillmBrain<TInput, TOutput> where TInput : new() where TOutput : new()
     {
         /// <summary>
         /// 思考结束时调用
@@ -40,7 +29,7 @@ namespace unillm
         /// </summary>
         public bool IsThinking => _agent.IsPending;
 
-        public UnillmBrain(IUnillmAgent agent = null, string background = "")
+        public UnillmCommonBrain(IUnillmAgent agent = null, string background = "")
         {
             _agent = agent ?? new UnillmCommmonAgent();
             if (_agent.HasInit)
@@ -56,11 +45,11 @@ namespace unillm
             _agent.OnReceivedMessage += OnReceivedMessage;
         }
 
-        public UnillmBrain(string background) : this(null, background)
+        public UnillmCommonBrain(string background) : this(null, background)
         {
         }
 
-        ~UnillmBrain()
+        ~UnillmCommonBrain()
         {
             _agent.OnReceivedMessage -= OnReceivedMessage;
         }
@@ -98,7 +87,7 @@ namespace unillm
                 {
                     OnThinkCompleted?.Invoke(this, new UnillmOnBrainThinkCompletedEventArgs<TInput, TOutput>()
                     {
-                        Input  = _currentInput,
+                        Input = _currentInput,
                         Output = output
                     });
                 }
