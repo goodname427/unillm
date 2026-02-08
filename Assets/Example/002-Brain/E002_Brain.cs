@@ -4,6 +4,9 @@ using UnityEngine.UI;
 
 namespace unillm.Example
 {
+    /// <summary>
+    /// 一个简单的计算机大脑
+    /// </summary>
     public class E002_Brain : MonoBehaviour
     {
         private class Input
@@ -95,7 +98,7 @@ namespace unillm.Example
             _brain.Think(input);
         }
 
-        private void OnThinkCompleted(UnillmBrain<Input, Output> brain, UnillmOnBrainThinkCompleteEventArgs<Input, Output> args)
+        private void OnThinkCompleted(UnillmBrain<Input, Output> brain, UnillmOnBrainThinkCompletedEventArgs<Input, Output> args)
         {
             Debug.Log(args.Output);
 

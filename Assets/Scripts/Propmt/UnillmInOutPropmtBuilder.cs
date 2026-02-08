@@ -112,8 +112,6 @@ option±íÊ¾¸ÃÊôĞÔµÄÊ¾ÀıÖµ£¬ÒÔ`[R][op1, op2, ...]`µÄ¸ñÊ½½øĞĞÃèÊö£¬µ±´æÔÚRÊ±±íÊ¾¸ÃÊ
 
                 if (typeof(IList).IsAssignableFrom(memberType))
                 {
-                    BuildBaseMember(member, memberType, prefix, "Array");
-
                     Type elementType;
                     if (memberType.IsArray)
                     {
@@ -127,6 +125,8 @@ option±íÊ¾¸ÃÊôĞÔµÄÊ¾ÀıÖµ£¬ÒÔ`[R][op1, op2, ...]`µÄ¸ñÊ½½øĞĞÃèÊö£¬µ±´æÔÚRÊ±±íÊ¾¸ÃÊ
                     {
                         return;
                     }
+
+                    BuildBaseMember(member, memberType, prefix, $"Array[{elementType}]");
 
                     // Êı×éÔªËØÎª·Ç»ù´¡ÀàĞÍÊ½Ê±²Å¶ÔÊı×éÔªËØ½øĞĞÃèÊö
                     if (elementType != typeof(bool) 

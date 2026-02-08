@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace unillm.Example
 {
+    /// <summary>
+    /// 简单的对话窗口
+    /// </summary>
     public class E001_MessagePanel : MonoBehaviour
     {
         [SerializeField]

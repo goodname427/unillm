@@ -118,12 +118,18 @@ namespace unillm
                 }
                 else
                 {
-                    UnillmLogger.Error($"Received a none message");
+                    OnReceivedMessage?.Invoke(this, new UnillmOnAgentReceivedMessageEventArgs()
+                    {
+                        ErrorReason = $"Received a null message.\nResponse content is\n{responseContent}"
+                    });
                 }
             }
             else
             {
-                UnillmLogger.Error($"Request failed {response.StatusCode}");
+                OnReceivedMessage?.Invoke(this, new UnillmOnAgentReceivedMessageEventArgs()
+                {
+                    ErrorReason = $"Request failed.\nResponse status code is {response.StatusCode}"
+                });
             }
 
             IsPending = false;

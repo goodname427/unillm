@@ -2,7 +2,7 @@ using System;
 
 namespace unillm
 {
-    public class UnillmOnAgentReceivedMessageEventArgs : EventArgs
+    public class UnillmOnAgentReceivedMessageEventArgs : UnillmFuctionalEventArgs
     {
         public UnillmMessage Message { get; set; }
     }
@@ -15,7 +15,7 @@ namespace unillm
     public interface IUnillmAgent
     {
         /// <summary>
-        /// 收到消息的回调时间
+        /// 收到消息的回调事件
         /// </summary>
         event UnillmOnAgentReceivedMessageEventHandler OnReceivedMessage;
 
