@@ -9,9 +9,9 @@ namespace unillm
 {
     public class UnillmCommonAgentModelConfig
     {
-        public string URL { get; } = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions";
-        public string Key { get; } = Environment.GetEnvironmentVariable("QWEN_API_KEY", EnvironmentVariableTarget.User);
-        public string Model { get; } = "qwen-plus";
+        public string URL { get; set; } = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions";
+        public string Key { get; set; } = Environment.GetEnvironmentVariable("QWEN_API_KEY", EnvironmentVariableTarget.User);
+        public string Model { get; set; } = "qwen-plus";
     }
 
     public sealed class UnillmCommmonAgent : IUnillmAgent
@@ -20,7 +20,7 @@ namespace unillm
 
         private readonly HttpClient _httpClient = new();
 
-        private UnillmCommonAgentModelConfig _config;
+        private readonly UnillmCommonAgentModelConfig _config;
 
         private readonly List<UnillmMessage> _context = new();
 
@@ -56,6 +56,8 @@ namespace unillm
                 UnillmLogger.Warrning("Agent has init");
                 return;
             }
+
+            UnillmLogger.Log($"The agent propmt is {systemPropmt}");
 
             HasInit = true;
             PushMessage(UnillmMessage.MakeSystemMessage(systemPropmt));

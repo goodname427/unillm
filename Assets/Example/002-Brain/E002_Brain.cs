@@ -77,7 +77,8 @@ namespace unillm.Example
 
         public void Start()
         {
-            _brain = new UnillmCommonBrain<Input, Output>("你是一个聪明的计算器，能够按照我的要求正确输出结果。接下来我会给你一个题目，请你返回题目的结果。涉及到文本的地方请使用英语");
+            _brain = new UnillmCommonBrain<Input, Output>(new UnillmCommonBrainInitConfig("你是一个聪明的计算器，能够按照我的要求正确输出结果。接下来我会给你一个题目，请你返回题目的结果。涉及到文本的地方请使用英语"));
+            _brain.OnEquipped(null);
 
             _brain.OnThinkCompleted += OnThinkCompleted;
 

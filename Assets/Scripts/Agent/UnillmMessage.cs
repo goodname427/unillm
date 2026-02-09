@@ -64,12 +64,7 @@ namespace unillm
         /// <returns></returns>
         public T Get<T>() where T : new()
         {
-            string pattern = @"^```json\s*|\s*```$";
-
-            // 过滤可能的代码包围块
-            string cleanJson = Regex.Replace(Content, pattern, "", RegexOptions.Multiline);
-
-            return UnillmJsonHelper.ToObject<T>(cleanJson.Trim());
+            return UnillmJsonHelper.ToObject<T>(UnillmJsonHelper.GetCleanJson(Content));
         }
     }
 }

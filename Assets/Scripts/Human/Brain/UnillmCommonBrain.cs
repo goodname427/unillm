@@ -1,9 +1,36 @@
-using System;
-
 namespace unillm
 {
+    public class UnillmCommonBrainInitConfig
+    {
+        /// <summary>
+        /// 所使用的Agent
+        /// </summary>
+        public IUnillmAgent Agent;
+
+        /// <summary>
+        /// 提示词
+        /// </summary>
+        public string Prompt;
+
+        /// <summary>
+        /// 是否附加InOut信息
+        /// </summary>
+        public bool AttachInOutInfo;
+
+        public UnillmCommonBrainInitConfig(IUnillmAgent agent, string prompt, bool attachInOutInfo)
+        {
+            Agent = agent;
+            Prompt = prompt;
+            AttachInOutInfo = attachInOutInfo;
+        }
+
+        public UnillmCommonBrainInitConfig(string prompt = "", bool attachInOutInfo = true) : this(new UnillmCommmonAgent(), prompt, attachInOutInfo)
+        {
+        }
+    }
+
     /// <summary>
-    /// 通用的Brain，提供一个较为通用的解决方案
+    /// 通用的Brain实现
     /// </summary>
     /// <typeparam name="TInput"></typeparam>
     /// <typeparam name="TOutput"></typeparam>
@@ -17,7 +44,7 @@ namespace unillm
         /// <summary>
         /// 所使用的Agent
         /// </summary>
-        private readonly IUnillmAgent _agent;
+        private IUnillmAgent _agent;
 
         /// <summary>
         /// 当前输入
@@ -29,9 +56,19 @@ namespace unillm
         /// </summary>
         public bool IsThinking => _agent.IsPending;
 
-        public UnillmCommonBrain(IUnillmAgent agent = null, string background = "")
+        /// <summary>
+        /// 初始化参数
+        /// </summary>
+        private UnillmCommonBrainInitConfig _config;
+
+        public UnillmCommonBrain(UnillmCommonBrainInitConfig config)
         {
-            _agent = agent ?? new UnillmCommmonAgent();
+            _config = config;
+        }
+
+        public void OnEquipped(IUnillmHuman<TInput, TOutput> human)
+        {
+            _agent = _config.Agent;
             if (_agent.HasInit)
             {
                 UnillmLogger.Warrning("Agent has init, brain will create a new agent");
@@ -39,17 +76,19 @@ namespace unillm
                 return;
             }
 
-            var propmt = new UnillmInOutPropmtBuilder<TInput, TOutput>(background).Build();
-            UnillmLogger.Log($"The brain propmt is {propmt}");
+            var propmt = _config.AttachInOutInfo ? 
+                new UnillmConcatPropmtBuilder(
+                    _config.Prompt, 
+                    UnillmTypePropmtBuilder.PropertyFormat, 
+                    new UnillmInOutPropmtBuilder<TInput, TOutput>().Build()
+                ).Build() : 
+                _config.Prompt;
+            
             _agent.Init(propmt);
             _agent.OnReceivedMessage += OnReceivedMessage;
         }
 
-        public UnillmCommonBrain(string background) : this(null, background)
-        {
-        }
-
-        ~UnillmCommonBrain()
+        public void OnUnequipped(IUnillmHuman<TInput, TOutput> human)
         {
             _agent.OnReceivedMessage -= OnReceivedMessage;
         }
@@ -96,7 +135,7 @@ namespace unillm
                     OnThinkCompleted?.Invoke(this, new UnillmOnBrainThinkCompletedEventArgs<TInput, TOutput>()
                     {
                         Input = _currentInput,
-                        ErrorReason = $"Can not transition the message content to a instance of the type({typeof(TOutput)})"
+                        ErrorReason = $"Can not transition the message content to a instance of the type({typeof(TOutput)})\nThe original message is:\n {args.Message.Content}"
                     });
                 }
             }

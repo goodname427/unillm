@@ -20,7 +20,7 @@ namespace unillm.Example
             public List<string> Result = new();
         }
 
-        private class Human : UnillmHuman<Input, Output>
+        private class Human : UnillmCommonHuman<Input, Output>
         {
             private Input _input = new();
 
@@ -38,7 +38,7 @@ namespace unillm.Example
 
             protected override IUnillmBrain<Input, Output> MakeBrain()
             {
-                return new UnillmCommonBrain<Input, Output>("你是一个聪明的机器人，能够按照我的要求正确输出结果。接下来我会给你一个时间戳，请你返回时间戳对应的时间");
+                return new UnillmCommonBrain<Input, Output>(new UnillmCommonBrainInitConfig("你是一个聪明的机器人，能够按照我的要求正确输出结果。接下来我会给你一个时间戳，请你返回时间戳对应的时间"));
             }
 
             protected override void OnSensed(IUnillmSense sense, UnillmOnSensedEventArgs args)

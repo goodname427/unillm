@@ -16,7 +16,10 @@ namespace unillm
             set
             {
                 _errorReason = value;
-                UnillmLogger.Error(ErrorReason);
+                if (!IsSuccess)
+                {
+                    UnillmLogger.Error(ErrorReason);
+                }
             }
         }
     }

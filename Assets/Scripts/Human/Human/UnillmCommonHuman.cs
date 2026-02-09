@@ -1,8 +1,14 @@
 using System.Collections.Generic;
+using UnityEngine.AI;
 
 namespace unillm
 {
-    public abstract class UnillmHuman<TInput, TOutput> : IUnillmHuman<TInput, TOutput> where TInput : new() where TOutput : new()
+    /// <summary>
+    /// 通用的Human实现
+    /// </summary>
+    /// <typeparam name="TInput"></typeparam>
+    /// <typeparam name="TOutput"></typeparam>
+    public abstract class UnillmCommonHuman<TInput, TOutput> : IUnillmHuman<TInput, TOutput> where TInput : new() where TOutput : new()
     {
         private IUnillmBrain<TInput, TOutput> _brain;
         public IUnillmBrain<TInput, TOutput> Brain
@@ -16,7 +22,9 @@ namespace unillm
         private readonly List<IUnillmBody> _bodies;
         public IReadOnlyList<IUnillmBody> Bodies => _bodies; 
 
-        public UnillmHuman()
+        public bool HasInit { get; private set; }
+
+        public UnillmCommonHuman()
         {
             _senses = new List<IUnillmSense>();
             _bodies = new List<IUnillmBody>();
@@ -24,49 +32,67 @@ namespace unillm
 
         public virtual void Init()
         {
-            _brain = MakeBrain();
-            if (_brain == null)
+            if (HasInit)
             {
-                UnillmLogger.Error("Brain is null");
+                UnillmLogger.Error("Human has init");
+                return;
             }
-
-            _brain.OnThinkCompleted += OnThinkCompleted;
+            HasInit = true;
 
             _senses.Clear();
             foreach (var sense in CollectSenses())
             {
                 _senses.Add(sense);
                 sense.OnSensed += OnSensed;
-                sense.OnEquiped(this);
+                sense.OnEquipped(this);
             }
 
             _bodies.Clear();
             foreach (var body in CollectBodies())
             {
                 _bodies.Add(body);
+                body.OnEquipped(this);
             }
+
+            _brain = MakeBrain();
+            if (_brain == null)
+            {
+                UnillmLogger.Error("Brain is null");
+            }
+
+            _brain.OnEquipped(this);
+            _brain.OnThinkCompleted += OnThinkCompleted;
         }
 
         public virtual void Uninit()
         {
+            if (!HasInit)
+            {
+                UnillmLogger.Error("Human has not init");
+                return;
+            }
+
+            _brain.OnUnequipped(this);
             _brain.OnThinkCompleted -= OnThinkCompleted;
 
             foreach (var sense in _senses)
             {
                 sense.OnSensed -= OnSensed;
-                sense.OnUnequiped(this);
+                sense.OnUnequipped(this);
             }
             _senses.Clear();
 
-            foreach (var sense in _bodies)
+            foreach (var body in _bodies)
             {
-
+                body.OnUnequipped(this);
             }
             _senses.Clear();
+
+            HasInit = false;
         }
 
         /// <summary>
-        /// 收集大脑
+        /// 收集大脑（必须初始化完毕）
         /// </summary>
         /// <returns></returns>
         protected abstract IUnillmBrain<TInput, TOutput> MakeBrain();

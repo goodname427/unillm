@@ -1,11 +1,22 @@
 using System;
 using System.Collections;
+using System.Text.RegularExpressions;
 using Unity.VisualScripting.FullSerializer;
 
 namespace unillm
 {
     public static class UnillmJsonHelper
     {
+        public static string GetCleanJson(string json)
+        {
+            string pattern = @"^```json\s*|\s*```$";
+
+            // 过滤可能的代码包围块
+            string cleanJson = Regex.Replace(json, pattern, "", RegexOptions.Multiline);
+
+            return cleanJson.Trim();
+        }
+
         public static object ParseDataToObject(fsData data, Type type)
         {
             if (data.IsNull)
@@ -121,11 +132,12 @@ namespace unillm
             return null;
         }
 
-        public static T ToObject<T>(string json) where T : new()
+        public static T ToObject<T>(string json, Type type = null) where T : new()
         {
             var data = fsJsonParser.Parse(json);
 
-            return (T)ParseDataToObject(data, typeof(T));
+            type ??= typeof(T);
+            return (T)ParseDataToObject(data, type);
         }
 
         private static fsData ParseObjectToData(object obj)
