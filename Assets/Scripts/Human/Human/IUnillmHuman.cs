@@ -25,10 +25,12 @@ namespace unillm
         /// 大脑
         /// </summary>
         IUnillmBrain<TInput, TOutput> Brain { get; }
+        
         /// <summary>
         /// 感知
         /// </summary>
         IReadOnlyList<IUnillmSense> Senses { get; }
+        
         /// <summary>
         /// 身体
         /// </summary>

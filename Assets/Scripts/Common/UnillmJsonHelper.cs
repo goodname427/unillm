@@ -7,6 +7,11 @@ namespace unillm
 {
     public static class UnillmJsonHelper
     {
+        /// <summary>
+        /// 获得标准的Json字符串，去掉多余的字符
+        /// </summary>
+        /// <param name="json"></param>
+        /// <returns></returns>
         public static string GetCleanJson(string json)
         {
             string pattern = @"^```json\s*|\s*```$";
@@ -17,6 +22,12 @@ namespace unillm
             return cleanJson.Trim();
         }
 
+        /// <summary>
+        /// JsonData转Object
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
         public static object ParseDataToObject(fsData data, Type type)
         {
             if (data.IsNull)
@@ -132,6 +143,13 @@ namespace unillm
             return null;
         }
 
+        /// <summary>
+        /// Json字符串转Object
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="json"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
         public static T ToObject<T>(string json, Type type = null) where T : new()
         {
             var data = fsJsonParser.Parse(json);
@@ -140,6 +158,11 @@ namespace unillm
             return (T)ParseDataToObject(data, type);
         }
 
+        /// <summary>
+        /// Object转JsonData
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         private static fsData ParseObjectToData(object obj)
         {
             if (obj is null)
@@ -213,6 +236,11 @@ namespace unillm
             return dicData;
         }
 
+        /// <summary>
+        /// Object转Json字符串
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         public static string ToJson(object obj)
         {
             fsData fsData = ParseObjectToData(obj);

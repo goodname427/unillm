@@ -11,10 +11,7 @@ namespace unillm
     public abstract class UnillmCommonHuman<TInput, TOutput> : IUnillmHuman<TInput, TOutput> where TInput : new() where TOutput : new()
     {
         private IUnillmBrain<TInput, TOutput> _brain;
-        public IUnillmBrain<TInput, TOutput> Brain
-        {
-            get { return _brain; }
-        }
+        public IUnillmBrain<TInput, TOutput> Brain => _brain;
 
         private readonly List<IUnillmSense> _senses;
         public IReadOnlyList<IUnillmSense> Senses => _senses;
@@ -30,6 +27,9 @@ namespace unillm
             _bodies = new List<IUnillmBody>();
         }
 
+        /// <summary>
+        /// 初始化Human的各个部件
+        /// </summary>
         public virtual void Init()
         {
             if (HasInit)
@@ -64,6 +64,9 @@ namespace unillm
             _brain.OnThinkCompleted += OnThinkCompleted;
         }
 
+        /// <summary>
+        /// 注销
+        /// </summary>
         public virtual void Uninit()
         {
             if (!HasInit)

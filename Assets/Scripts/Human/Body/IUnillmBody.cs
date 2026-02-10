@@ -7,6 +7,11 @@ namespace unillm
         
     }
 
+    public class UnillmBodyDoResult : UnillmFuctionalEventArgs
+    {
+
+    }
+
     /// <summary>
     /// 能够执行某种任务
     /// </summary>
@@ -31,18 +36,18 @@ namespace unillm
         /// 执行某一项任务
         /// </summary>
         /// <returns></returns>
-        bool Do(UnillmBodyDoEventArgs eventArgs);
+        bool Do(UnillmBodyDoEventArgs eventArgs, UnillmBodyDoResult result);
     }
 
     public interface IUnillmBody<TDoArgs> : IUnillmBody where TDoArgs : class
     {
         Type IUnillmBody.ArgsType => typeof(TDoArgs);
 
-        bool IUnillmBody.Do(UnillmBodyDoEventArgs eventArgs)
+        bool IUnillmBody.Do(UnillmBodyDoEventArgs eventArgs, UnillmBodyDoResult result)
         {
-            return Do(eventArgs as TDoArgs);
+            return Do(eventArgs as TDoArgs, result);
         }
 
-        bool Do(TDoArgs eventArgs);
+        bool Do(TDoArgs eventArgs, UnillmBodyDoResult result);
     }
 }
