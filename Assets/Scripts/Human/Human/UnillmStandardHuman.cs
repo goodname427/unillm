@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using Unity.VisualScripting;
+using UnityEngine.Experimental.GlobalIllumination;
 
 namespace unillm
 {
@@ -34,6 +36,9 @@ namespace unillm
         public UnillmStandardHumanAction[] Actions = { new() };
     }
 
+    /// <summary>
+    /// 回合开始参数
+    /// </summary>
     public class UnillmStandardHumanStartTurnArgs
     {
         public string Target { get; set; }
@@ -41,6 +46,9 @@ namespace unillm
         public UnillmStandardHumanInput OverrideInput { get; set; }
     }
 
+    /// <summary>
+    /// Action执行失败原因
+    /// </summary>
     public enum UnillmStandardHumanActionExecuteFailedReason
     {
         /// <summary>
@@ -59,6 +67,9 @@ namespace unillm
         BodyDoFailed,
     }
 
+    /// <summary>
+    /// Action执行结果
+    /// </summary>
     public class UnillmStandardHumanActionExecuteResult
     {
         public string Name { get; set; }
@@ -69,20 +80,61 @@ namespace unillm
             return Args as T;
         }
 
-        public UnillmStandardHumanActionExecuteFailedReason FailedReason = UnillmStandardHumanActionExecuteFailedReason.None;
+        /// <summary>
+        /// 失败类型
+        /// </summary>
+        public UnillmStandardHumanActionExecuteFailedReason FailedReasonType = UnillmStandardHumanActionExecuteFailedReason.None;
+        /// <summary>
+        /// 具体执行结果
+        /// </summary>
         public UnillmBodyDoResult DoResult = new();
 
-        public bool IsSuccess => FailedReason == UnillmStandardHumanActionExecuteFailedReason.None && DoResult.IsSuccess;
+        /// <summary>
+        /// 是否成功
+        /// </summary>
+        public bool IsSuccess => FailedReasonType == UnillmStandardHumanActionExecuteFailedReason.None && DoResult.IsSuccess;
+        
+        /// <summary>
+        /// 失败理由
+        /// </summary>
+        public string FailedReson => FailedReasonType switch
+        {
+            UnillmStandardHumanActionExecuteFailedReason.None => null,
+            UnillmStandardHumanActionExecuteFailedReason.BodyNotFound => $"Human wanna do a not exsist action {Name}",
+            UnillmStandardHumanActionExecuteFailedReason.BodyDoFailed => DoResult.ErrorReason,
+            _ => null,
+        };
     }
 
+    /// <summary>
+    /// 回合结束
+    /// 注意，回合结束成功与否与Action的执行情况无关
+    /// </summary>
     public class UnillmOnStandardHumanTurnCompletedEventArgs : UnillmFuctionalEventArgs
     {
+        /// <summary>
+        /// 当前回合输入
+        /// </summary>
         public UnillmStandardHumanInput Input { get; set; }
+        
+        /// <summary>
+        /// 当前回合输出
+        /// </summary>
         public UnillmStandardHumanOutput Output { get; set; }
 
+        /// <summary>
+        /// Action执行情况
+        /// </summary>
         public List<UnillmStandardHumanActionExecuteResult> ActionExecuteResults { get; set; } = new();
 
+        /// <summary>
+        /// 是否所有Action都执行成功
+        /// </summary>
         public bool IsAllActionExecuteSuccess => IsSuccess && ActionExecuteResults.All(result => result.IsSuccess);
+        
+        /// <summary>
+        /// 是否所有Action都执行失败
+        /// </summary>
         public bool IsAnyActionExecuteSuccess => IsSuccess && ActionExecuteResults.Any(result => result.IsSuccess);
     }
 
@@ -181,7 +233,7 @@ namespace unillm
                 if (body == null)
                 {
                     UnillmLogger.Warrning($"Human wanna do a not exsist action {action.Name}");
-                    executeResult.FailedReason = UnillmStandardHumanActionExecuteFailedReason.BodyNotFound;
+                    executeResult.FailedReasonType = UnillmStandardHumanActionExecuteFailedReason.BodyNotFound;
                     continue;
                 }
 
@@ -189,14 +241,14 @@ namespace unillm
 
                 if (!body.Do(executeResult.Args, executeResult.DoResult))
                 {
-                    executeResult.FailedReason = UnillmStandardHumanActionExecuteFailedReason.BodyDoFailed;
+                    executeResult.FailedReasonType = UnillmStandardHumanActionExecuteFailedReason.BodyDoFailed;
                 }
             }
 
             OnTurnCompleted?.Invoke(this, onTurnCompletedArgs);
         }
 
-        protected bool CheckArgs(UnillmOnBrainThinkCompletedEventArgs<UnillmStandardHumanInput, UnillmStandardHumanOutput> args, out string reason)
+        protected virtual bool CheckArgs(UnillmOnBrainThinkCompletedEventArgs<UnillmStandardHumanInput, UnillmStandardHumanOutput> args, out string reason)
         {
             reason = null;
             return true;

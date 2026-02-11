@@ -4,54 +4,48 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
-using static UnityEditor.ObjectChangeEventStream;
+
 namespace unillm.Example
 {
     class E005_Player : MonoBehaviour
     {
         public class Human : UnillmStandardHuman
         {
-            public string Name;
             public E005_Player Outer;
             public E005_CardManager HandCards { get; } = new();
 
             public override string MakeBackground()
             {
                 return @$"
-你是一名技术高超的玩家(游戏中代号为{Name})，你现在正在玩吹牛逼。
-游戏具体规则如下：
-“吹牛逼”（也叫唬牌）是靠撒谎 + 质疑的扑克游戏，核心就是：扣牌喊牌、可真可假、有人质疑就翻牌定输赢。
-一、基础准备
-人数：2–6 人
-牌具：1 副 52 张（不含大小王）
-发牌：洗牌后平均分
-二、核心流程（每一轮）
-1. 叫牌 + 出牌
-出牌人把牌背面朝上放在桌上，同时喊出牌型（格式：数量 + 点数）。
-例：3 张 5、2 张 A、4 张 K
-规则：你喊的可以和实际出的不一样（吹牛）。
-2. 下家三选一
-轮到下家，只能做一件事：
-跟牌：出任意数量的牌，也扣着，喊同样的点数（也可吹牛）。
-例：上家喊 “3 张 5”，你也出 3 张，喊 “3 张 5”。
-掀牌（质疑）：不信上家，翻开上家出的牌进行验证。
-过牌：不跟也不质疑，直接跳过，轮到下家。
-3. 掀牌判定（最关键）
-翻开后，数桌上符合所喊点数的牌（含大小王）：
-真：符合数量 → 质疑的人收走桌上所有牌。
-假：不够数量 → 出牌 / 跟牌的人收走桌上所有牌。
-收牌后，由输的人开始下一轮。
-4. 胜负
-谁先出完手里所有牌，谁赢。
+你将扮演技术高超的“吹牛逼”游戏玩家 {Outer.Name}，在遵守规则的前提下，运用策略与心理博弈争取最终胜利。
+
+你的人设：
+{Outer.GetDescription()}
+
+游戏规则：
+    牌具：一副52张扑克牌（无大小王）
+    目标：每人轮流出牌，最快出完手牌者获胜。
+    
+    游戏开始：场上所有玩家平分牌堆，获取初始手牌。开始第一名玩家的回合。
+    回合开始：
+        如果是本轮第一位出牌的玩家：
+            1.出牌: 选择任意手牌并叫出点数（点数可与实际出的手牌不同），扣置在桌上。
+        如果不是：
+            1.出牌：选择任意手牌并叫出本轮点数（点数可与实际出的手牌不同），扣置在桌上。
+            2.质疑：掀开上家刚出的牌验证。
+            3.过牌：跳过本回合。
+    回合结束：如果未发生质疑，则开始下一名玩家的回合。
+
+    质疑的验证判定：
+        若所有牌与叫出的点数相同 → 质疑者收取桌上全部牌，本轮结束。
+        若任意一张牌与叫出的点数不同 → 被质疑者收取桌上全部牌，本轮结束。
+        轮次交接：收牌者成为下一轮起始出牌人。
 ";
             }
 
             protected override IUnillmAgent MakeAgent()
             {
-                return new UnillmCommmonAgent(new UnillmCommonAgentModelConfig
-                {
-                    Model = "qwen3-max"
-                });
+                return new UnillmCommmonAgent(Outer.GetModelConfig());
             }
 
             protected override IEnumerable<IUnillmBody> CollectBodies()
@@ -66,14 +60,37 @@ namespace unillm.Example
                 yield return HandCards;
                 yield return E005_GameManager.Instance;
             }
+
+            protected override bool CheckArgs(UnillmOnBrainThinkCompletedEventArgs<UnillmStandardHumanInput, UnillmStandardHumanOutput> args, out string reason)
+            {
+                if (args.Output.Actions.Length != 1)
+                {
+                    reason = $"一回合你只能执行一个动作(当前动作数量为{args.Output.Actions.Length})";
+                    return false;
+                }
+
+                return base.CheckArgs(args, out reason);
+            }
         }
 
         public event Action<E005_Player> OnTurnStart; 
         public event Action<E005_Player> OnTurnCompleted;
         public event Action<E005_Player, string> OnTipsUpdate;
 
+        [Header("基础配置")]
+        public Sprite Icon;
+        public string NickName;
+
+        [Header("Agent配置")]
+        public string AgentURL;
+        public string AgentKey;
+        public string AgentModel;
+        public bool AgentEnableThinking;
+        [Multiline]
+        public string AgentDescription;
+
         public int No { get; set; }
-        public string Name => $"玩家{No}";
+        public string Name => $"{NickName}(玩家{No})";
 
         private Human _human;
         public E005_CardManager HandCards => _human.HandCards;
@@ -82,7 +99,6 @@ namespace unillm.Example
         {
             _human = new Human
             {
-                Name = Name,
                 Outer = this
             };
             _human.Init();
@@ -90,27 +106,58 @@ namespace unillm.Example
             _human.OnTurnCompleted += OnHumanTurnCompleted;
         }
 
+        private UnillmCommonAgentModelConfig GetModelConfig()
+        {
+            return new UnillmCommonAgentModelConfig
+            {
+                URL = AgentURL,
+                Key = Environment.GetEnvironmentVariable(AgentKey, EnvironmentVariableTarget.User),
+                Model = AgentModel,
+                EnableThinking = AgentEnableThinking
+            };
+        }
+
+        private string GetDescription()
+        {
+            return AgentDescription;
+        }
+
         private void OnHumanTurnCompleted(UnillmStandardHuman human, UnillmOnStandardHumanTurnCompletedEventArgs args)
         {
-            var builder = new StringBuilder();
-            if (!args.IsAllActionExecuteSuccess)
+            // 判断是否失败并获取对应的失败理由
+            var reasonBuilder = new StringBuilder();
+            bool failed = false;
+            var firstAction = args.ActionExecuteResults.FirstOrDefault();
+            if (!args.IsSuccess)
             {
-                foreach (var result in args.ActionExecuteResults)
-                {
-                    builder.AppendLine(result.DoResult.ErrorReason);
-                }
-                
+                failed = true;
+                reasonBuilder.AppendLine(args.ErrorReason);
+            }
+            else if (firstAction == null)
+            {
+                failed = false;
+                reasonBuilder.AppendLine("你未选择任何行动");
+            }
+            else if (!firstAction.IsSuccess)
+            {
+                failed = true;
+                reasonBuilder.AppendLine(firstAction.FailedReson);
+            }
+
+            // 如果失败则需要重新进行操作
+            if (failed)
+            {
                 Delay(() => _human.StartTurn(new UnillmStandardHumanStartTurnArgs
                 {
-                    Target = $"由于以下原因:\n{builder}\n请你重新选择操作",
+                    Target = $"由于以下原因:\n{reasonBuilder}\n请你重新选择操作",
                     OverrideInput = args.Input
                 }));
-                
+
                 return;
             }
 
-            var firstAction = args.ActionExecuteResults.FirstOrDefault();
-            OnTipsUpdate?.Invoke(this, $"{Name}：选择 {firstAction.Name}\n{(firstAction.Get<E005_CardEventArgs>()).Reason}");
+            OnTipsUpdate?.Invoke(this, $"{Name}：选择 {firstAction.Name}\n说：{firstAction.Get<E005_CardEventArgs>().Say}\n想：{firstAction.Get<E005_CardEventArgs>().Reason}\n");
+            E005_GameManager.Instance.Notify(firstAction.Get<E005_CardEventArgs>().Say, Name);
             
             Delay(() => OnTurnCompleted?.Invoke(this));
         }
@@ -127,7 +174,7 @@ namespace unillm.Example
             });
         }
 
-        void Delay(Action func)
+        private void Delay(Action func)
         {
             IEnumerator InternalDelay()
             {

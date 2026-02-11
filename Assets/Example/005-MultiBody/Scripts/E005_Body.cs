@@ -6,14 +6,17 @@ namespace unillm.Example
     {
         [UnillmPropmtDescription("理由")]
         public string Reason = "";
+
+        [UnillmPropmtDescription("说话。与场上其他玩家进行对话，可以用于干扰他们的判断")]
+        public string Say = "";
     }
 
     class E005_PlayEventArgs : E005_CardEventArgs
     {
-        [UnillmPropmtDescription("你选择出的牌。这些牌必须是你的手牌，且不能重复")]
+        [UnillmPropmtDescription("你选择出的牌。出牌必须是你的手牌，且不能重复，点数可以与叫的点数不同")]
         public List<E005_Card> Cards = new() { new E005_Card() };
 
-        [UnillmPropmtDescription("如果当前是你叫牌，你需要指定你叫的点数，点数可以与实际的牌的点数不同；如果当前是你跟牌，则无需指定")]
+        [UnillmPropmtDescription("叫出的点数。如果当前是你叫牌，你可以随意指定该参数；如果当前是你跟牌，你需要指定为当前点数")]
         public E005_Rank Rank;
     }
 
@@ -23,7 +26,7 @@ namespace unillm.Example
 
         public string Name => "出牌";
 
-        public string Description => "出任意数量的牌";
+        public string Description => "出任意数量的牌，并叫出点数。叫出的点数可以与实际牌的点数不同";
 
         public bool Do(E005_PlayEventArgs eventArgs, UnillmBodyDoResult result)
         {

@@ -7,11 +7,25 @@ using System.Text;
 
 namespace unillm
 {
+    [System.Serializable]
     public class UnillmCommonAgentModelConfig
     {
+        /// <summary>
+        /// 模型API URL
+        /// </summary>
         public string URL { get; set; } = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions";
+        /// <summary>
+        /// 模型API Key
+        /// </summary>
         public string Key { get; set; } = Environment.GetEnvironmentVariable("QWEN_API_KEY", EnvironmentVariableTarget.User);
+        /// <summary>
+        /// 所选模型
+        /// </summary>
         public string Model { get; set; } = "qwen-plus";
+        /// <summary>
+        /// 是否开启思考
+        /// </summary>
+        public bool EnableThinking { get; set; } = false;
     }
 
     public sealed class UnillmCommmonAgent : IUnillmAgent
@@ -96,7 +110,8 @@ namespace unillm
             string jsonContent = UnillmJsonHelper.ToJson(new RequestContent()
             {
                 model = _config.Model,
-                messages = _context.Select(MessageContent.FromMessage).ToArray()
+                messages = _context.Select(MessageContent.FromMessage).ToArray(),
+                enable_thinking = _config.EnableThinking,
             });
 
             using var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
@@ -105,33 +120,40 @@ namespace unillm
             HttpResponseMessage response = await _httpClient.PostAsync(_config.URL, content);
 
             // 处理响应
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var receivedMessage = UnillmJsonHelper.ToObject<ResponseContent>(responseContent)?.FilterMessage();
-
-                if (receivedMessage is not null)
+                if (response.IsSuccessStatusCode)
                 {
-                    PushMessage(receivedMessage);
-                    OnReceivedMessage?.Invoke(this, new UnillmOnAgentReceivedMessageEventArgs()
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var receivedMessage = UnillmJsonHelper.ToObject<ResponseContent>(responseContent)?.FilterMessage();
+
+                    if (receivedMessage is not null)
                     {
-                        Message = receivedMessage
-                    });
+                        PushMessage(receivedMessage);
+                        OnReceivedMessage?.Invoke(this, new UnillmOnAgentReceivedMessageEventArgs()
+                        {
+                            Message = receivedMessage
+                        });
+                    }
+                    else
+                    {
+                        OnReceivedMessage?.Invoke(this, new UnillmOnAgentReceivedMessageEventArgs()
+                        {
+                            ErrorReason = $"Received a null message.\nResponse content is\n{responseContent}"
+                        });
+                    }
                 }
                 else
                 {
                     OnReceivedMessage?.Invoke(this, new UnillmOnAgentReceivedMessageEventArgs()
                     {
-                        ErrorReason = $"Received a null message.\nResponse content is\n{responseContent}"
+                        ErrorReason = $"Request failed.\nResponse status code is {response.StatusCode}"
                     });
                 }
             }
-            else
+            catch (Exception e)
             {
-                OnReceivedMessage?.Invoke(this, new UnillmOnAgentReceivedMessageEventArgs()
-                {
-                    ErrorReason = $"Request failed.\nResponse status code is {response.StatusCode}"
-                });
+                UnillmLogger.Error(e.StackTrace);
             }
 
             IsPending = false;
@@ -176,6 +198,7 @@ namespace unillm
         {
             public string model;
             public MessageContent[] messages;
+            public bool enable_thinking;
         }
 
         private class ResponseChoiceContent

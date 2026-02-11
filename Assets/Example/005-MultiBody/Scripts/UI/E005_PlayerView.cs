@@ -6,32 +6,34 @@ namespace unillm.Example
 {
     class E005_PlayerView : MonoBehaviour
     {
-        public Image BackgroudImage;
         public Image PlayerImage;
         public E005_CardManagerView CardManagerView;
         public TextMeshProUGUI TipsText;
 
-        private Color _backgroundDefaultColor;
-        public Color _backgroundActiveColor;
+        [Header("±³¾°ÑÕÉ«")]
+        public Image BackgroudImage;
+        public Color BackgroundDefaultColor;
+        public Color BackgroundActiveColor;
 
-        public void Init(E005_Player player)
+        public void Bind(E005_Player player)
         {
+            PlayerImage.sprite = player.Icon;
+
             CardManagerView.Bind(player.HandCards);
-            _backgroundDefaultColor = BackgroudImage.color;
 
             player.OnTipsUpdate += OnTipsUpdate;
             player.OnTurnStart += OnTurnStart;
             player.OnTurnCompleted += OnTurnCompleted;
         }
 
-        private void OnTurnCompleted(E005_Player obj)
+        private void OnTurnCompleted(E005_Player player)
         {
-            BackgroudImage.color = _backgroundDefaultColor;
+            BackgroudImage.color = BackgroundDefaultColor;
         }
 
-        private void OnTurnStart(E005_Player obj)
+        private void OnTurnStart(E005_Player player)
         {
-            BackgroudImage.color = _backgroundActiveColor;
+            BackgroudImage.color = BackgroundActiveColor;
         }
 
         private void OnTipsUpdate(E005_Player player, string tips)
