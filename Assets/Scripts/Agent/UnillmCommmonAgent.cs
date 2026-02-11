@@ -153,6 +153,7 @@ namespace unillm
             }
             catch (Exception e)
             {
+                UnillmLogger.Error(response.Content.ReadAsStringAsync().Result);
                 UnillmLogger.Error(e.StackTrace);
             }
 

@@ -49,7 +49,7 @@ namespace unillm
     /// <summary>
     /// Action执行失败原因
     /// </summary>
-    public enum UnillmStandardHumanActionExecuteFailedReason
+    public enum UnillmStandardHumanActionExecuteErrorReason
     {
         /// <summary>
         /// 表示成功
@@ -62,6 +62,11 @@ namespace unillm
         BodyNotFound,
 
         /// <summary>
+        /// 参数转换失败
+        /// </summary>
+        ArgsConvertFailed,
+
+        /// <summary>
         /// Body执行失败
         /// </summary>
         BodyDoFailed,
@@ -70,38 +75,47 @@ namespace unillm
     /// <summary>
     /// Action执行结果
     /// </summary>
-    public class UnillmStandardHumanActionExecuteResult
+    public class UnillmStandardHumanActionExecuteResult : UnillmFuctionalEventArgs
     {
         public string Name { get; set; }
         public UnillmBodyDoEventArgs Args { get; set; }
+        public IUnillmBody Body { get; set; }
 
         public T Get<T>() where T : UnillmBodyDoEventArgs
         {
             return Args as T;
         }
 
+        private UnillmStandardHumanActionExecuteErrorReason _errorReasonType = UnillmStandardHumanActionExecuteErrorReason.None;
         /// <summary>
         /// 失败类型
         /// </summary>
-        public UnillmStandardHumanActionExecuteFailedReason FailedReasonType = UnillmStandardHumanActionExecuteFailedReason.None;
+        public UnillmStandardHumanActionExecuteErrorReason ErrorReasonType 
+        { 
+            get => _errorReasonType;
+            set
+            {
+                if (_errorReasonType != UnillmStandardHumanActionExecuteErrorReason.None && _errorReasonType != UnillmStandardHumanActionExecuteErrorReason.BodyDoFailed)
+                {
+                    UnillmLogger.Error(ErrorReason);
+                }
+                _errorReasonType = value;
+            }
+        }
+
         /// <summary>
         /// 具体执行结果
         /// </summary>
-        public UnillmBodyDoResult DoResult = new();
+        public UnillmBodyDoResult DoResult { get; set; } = new();
 
-        /// <summary>
-        /// 是否成功
-        /// </summary>
-        public bool IsSuccess => FailedReasonType == UnillmStandardHumanActionExecuteFailedReason.None && DoResult.IsSuccess;
+        public override bool IsSuccess => ErrorReasonType == UnillmStandardHumanActionExecuteErrorReason.None && DoResult.IsSuccess;
         
-        /// <summary>
-        /// 失败理由
-        /// </summary>
-        public string FailedReson => FailedReasonType switch
+        public override string ErrorReason => ErrorReasonType switch
         {
-            UnillmStandardHumanActionExecuteFailedReason.None => null,
-            UnillmStandardHumanActionExecuteFailedReason.BodyNotFound => $"Human wanna do a not exsist action {Name}",
-            UnillmStandardHumanActionExecuteFailedReason.BodyDoFailed => DoResult.ErrorReason,
+            UnillmStandardHumanActionExecuteErrorReason.None => null,
+            UnillmStandardHumanActionExecuteErrorReason.BodyNotFound => $"Human wanna do a not exsist action {Name}",
+            UnillmStandardHumanActionExecuteErrorReason.ArgsConvertFailed => $"Cant convert args to type({Body.ArgsType})，please ",
+            UnillmStandardHumanActionExecuteErrorReason.BodyDoFailed => DoResult.ErrorReason,
             _ => null,
         };
     }
@@ -229,19 +243,23 @@ namespace unillm
                 };
                 onTurnCompletedArgs.ActionExecuteResults.Add(executeResult);
 
-                var body = Bodies.FirstOrDefault(body => body.Name == action.Name);
-                if (body == null)
+                executeResult.Body = Bodies.FirstOrDefault(body => body.Name == action.Name);
+                if (executeResult.Body == null)
                 {
-                    UnillmLogger.Warrning($"Human wanna do a not exsist action {action.Name}");
-                    executeResult.FailedReasonType = UnillmStandardHumanActionExecuteFailedReason.BodyNotFound;
+                    executeResult.ErrorReasonType = UnillmStandardHumanActionExecuteErrorReason.BodyNotFound;
                     continue;
                 }
 
-                executeResult.Args = action.Get<UnillmBodyDoEventArgs>(body.ArgsType);
-
-                if (!body.Do(executeResult.Args, executeResult.DoResult))
+                executeResult.Args = action.Get<UnillmBodyDoEventArgs>(executeResult.Body.ArgsType);
+                if (executeResult.Args == null)
                 {
-                    executeResult.FailedReasonType = UnillmStandardHumanActionExecuteFailedReason.BodyDoFailed;
+                    executeResult.ErrorReasonType = UnillmStandardHumanActionExecuteErrorReason.ArgsConvertFailed;
+                    continue;
+                }
+
+                if (!executeResult.Body.Do(executeResult.Args, executeResult.DoResult))
+                {
+                    executeResult.ErrorReasonType = UnillmStandardHumanActionExecuteErrorReason.BodyDoFailed;
                 }
             }
 

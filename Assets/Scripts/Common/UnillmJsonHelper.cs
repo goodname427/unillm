@@ -152,10 +152,17 @@ namespace unillm
         /// <returns></returns>
         public static T ToObject<T>(string json, Type type = null) where T : new()
         {
-            var data = fsJsonParser.Parse(json);
+            try
+            {
+                var data = fsJsonParser.Parse(json);
 
-            type ??= typeof(T);
-            return (T)ParseDataToObject(data, type);
+                type ??= typeof(T);
+                return (T)ParseDataToObject(data, type);
+            }
+            catch
+            {
+                return default;
+            }
         }
 
         /// <summary>

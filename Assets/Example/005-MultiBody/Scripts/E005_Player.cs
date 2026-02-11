@@ -29,16 +29,16 @@ namespace unillm.Example
     游戏开始：场上所有玩家平分牌堆，获取初始手牌。开始第一名玩家的回合。
     回合开始：
         如果是本轮第一位出牌的玩家：
-            1.出牌: 选择任意手牌并叫出点数（点数可与实际出的手牌不同），扣置在桌上。
+            1.出牌: 选择任意手牌并叫出点数（点数可与实际出的手牌不同），扣置在牌堆中。
         如果不是：
-            1.出牌：选择任意手牌并叫出本轮点数（点数可与实际出的手牌不同），扣置在桌上。
+            1.出牌：选择任意手牌并叫出本轮点数（点数可与实际出的手牌不同），扣置在牌堆中。
             2.质疑：掀开上家刚出的牌验证。
             3.过牌：跳过本回合。
     回合结束：如果未发生质疑，则开始下一名玩家的回合。
 
     质疑的验证判定：
-        若所有牌与叫出的点数相同 → 质疑者收取桌上全部牌，本轮结束。
-        若任意一张牌与叫出的点数不同 → 被质疑者收取桌上全部牌，本轮结束。
+        若所有牌与叫出的点数相同 → 质疑者收取牌堆中的所有牌，本轮结束。
+        若任意一张牌与叫出的点数不同 → 被质疑者收取牌堆中的所有牌，本轮结束。
         轮次交接：收牌者成为下一轮起始出牌人。
 ";
             }
@@ -141,7 +141,7 @@ namespace unillm.Example
             else if (!firstAction.IsSuccess)
             {
                 failed = true;
-                reasonBuilder.AppendLine(firstAction.FailedReson);
+                reasonBuilder.AppendLine(firstAction.ErrorReason);
             }
 
             // 如果失败则需要重新进行操作
@@ -149,7 +149,7 @@ namespace unillm.Example
             {
                 Delay(() => _human.StartTurn(new UnillmStandardHumanStartTurnArgs
                 {
-                    Target = $"由于以下原因:\n{reasonBuilder}\n请你重新选择操作",
+                    Target = $"[系统] 由于以下原因:\n{reasonBuilder}\n请你重新选择操作",
                     OverrideInput = args.Input
                 }));
 

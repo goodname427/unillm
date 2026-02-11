@@ -7,10 +7,16 @@ namespace unillm
     /// </summary>
     public class UnillmFuctionalEventArgs : EventArgs
     {
+        /// <summary>
+        /// 是否成功
+        /// </summary>
         public virtual bool IsSuccess => string.IsNullOrEmpty(ErrorReason);
 
         private string _errorReason = string.Empty;
-        public string ErrorReason
+        /// <summary>
+        /// 错误原因
+        /// </summary>
+        public virtual string ErrorReason
         {
             get => _errorReason; 
             set
