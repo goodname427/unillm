@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Unity.VisualScripting;
-using UnityEngine.Experimental.GlobalIllumination;
 
 namespace unillm
 {
-    public class UnillmStandardHumanInput
+    /// <summary>
+    /// 标准输入
+    /// </summary>
+    public class UnillmBodyHumanInput
     {
         [UnillmPropmtDescription("The target you should got")]
         public string Target;
@@ -16,7 +16,10 @@ namespace unillm
         public List<string> Sensed = new();
     }
 
-    public class UnillmStandardHumanAction
+    /// <summary>
+    /// 标准动作
+    /// </summary>
+    public class UnillmBodyHumanAction
     {
         [UnillmPropmtDescription("Action Name")]
         public string Name = "example name";
@@ -30,26 +33,29 @@ namespace unillm
         }
     }
 
-    public class UnillmStandardHumanOutput
+    /// <summary>
+    /// 标准输出
+    /// </summary>
+    public class UnillmBodyHumanOutput
     {
         [UnillmPropmtDescription("The actions you wanna do, it will be execute by order")]
-        public UnillmStandardHumanAction[] Actions = { new() };
+        public UnillmBodyHumanAction[] Actions = { new() };
     }
 
     /// <summary>
     /// 回合开始参数
     /// </summary>
-    public class UnillmStandardHumanStartTurnArgs
+    public class UnillmBodyHumanStartTurnArgs
     {
         public string Target { get; set; }
 
-        public UnillmStandardHumanInput OverrideInput { get; set; }
+        public UnillmBodyHumanInput OverrideInput { get; set; }
     }
 
     /// <summary>
     /// Action执行失败原因
     /// </summary>
-    public enum UnillmStandardHumanActionExecuteErrorReason
+    public enum UnillmBodyHumanActionExecuteErrorReason
     {
         /// <summary>
         /// 表示成功
@@ -75,27 +81,27 @@ namespace unillm
     /// <summary>
     /// Action执行结果
     /// </summary>
-    public class UnillmStandardHumanActionExecuteResult : UnillmFuctionalEventArgs
+    public class UnillmBodyHumanActionExecuteResult : UnillmFuctionalEventArgs
     {
         public string Name { get; set; }
-        public UnillmBodyDoEventArgs Args { get; set; }
+        public UnillmBodyDoArgs Args { get; set; }
         public IUnillmBody Body { get; set; }
 
-        public T Get<T>() where T : UnillmBodyDoEventArgs
+        public T Get<T>() where T : UnillmBodyDoArgs
         {
             return Args as T;
         }
 
-        private UnillmStandardHumanActionExecuteErrorReason _errorReasonType = UnillmStandardHumanActionExecuteErrorReason.None;
+        private UnillmBodyHumanActionExecuteErrorReason _errorReasonType = UnillmBodyHumanActionExecuteErrorReason.None;
         /// <summary>
         /// 失败类型
         /// </summary>
-        public UnillmStandardHumanActionExecuteErrorReason ErrorReasonType 
-        { 
+        public UnillmBodyHumanActionExecuteErrorReason ErrorReasonType
+        {
             get => _errorReasonType;
             set
             {
-                if (_errorReasonType != UnillmStandardHumanActionExecuteErrorReason.None && _errorReasonType != UnillmStandardHumanActionExecuteErrorReason.BodyDoFailed)
+                if (_errorReasonType != UnillmBodyHumanActionExecuteErrorReason.None && _errorReasonType != UnillmBodyHumanActionExecuteErrorReason.BodyDoFailed)
                 {
                     UnillmLogger.Error(ErrorReason);
                 }
@@ -108,71 +114,71 @@ namespace unillm
         /// </summary>
         public UnillmBodyDoResult DoResult { get; set; } = new();
 
-        public override bool IsSuccess => ErrorReasonType == UnillmStandardHumanActionExecuteErrorReason.None && DoResult.IsSuccess;
-        
+        public override bool IsSuccess => ErrorReasonType == UnillmBodyHumanActionExecuteErrorReason.None && DoResult.IsSuccess;
+
         public override string ErrorReason => ErrorReasonType switch
         {
-            UnillmStandardHumanActionExecuteErrorReason.None => null,
-            UnillmStandardHumanActionExecuteErrorReason.BodyNotFound => $"Human wanna do a not exsist action {Name}",
-            UnillmStandardHumanActionExecuteErrorReason.ArgsConvertFailed => $"Cant convert args to type({Body.ArgsType})，please ",
-            UnillmStandardHumanActionExecuteErrorReason.BodyDoFailed => DoResult.ErrorReason,
+            UnillmBodyHumanActionExecuteErrorReason.None => null,
+            UnillmBodyHumanActionExecuteErrorReason.BodyNotFound => $"Human wanna do a not exsist action {Name}",
+            UnillmBodyHumanActionExecuteErrorReason.ArgsConvertFailed => $"Cant convert args to type({Body.ArgsType})，please ",
+            UnillmBodyHumanActionExecuteErrorReason.BodyDoFailed => DoResult.ErrorReason,
             _ => null,
         };
     }
 
     /// <summary>
-    /// 回合结束
+    /// 回合执行结果
     /// 注意，回合结束成功与否与Action的执行情况无关
     /// </summary>
-    public class UnillmOnStandardHumanTurnCompletedEventArgs : UnillmFuctionalEventArgs
+    public class UnillmOnBodyHumanTurnCompletedEventArgs : UnillmFuctionalEventArgs
     {
         /// <summary>
         /// 当前回合输入
         /// </summary>
-        public UnillmStandardHumanInput Input { get; set; }
-        
+        public UnillmBodyHumanInput Input { get; set; }
+
         /// <summary>
         /// 当前回合输出
         /// </summary>
-        public UnillmStandardHumanOutput Output { get; set; }
+        public UnillmBodyHumanOutput Output { get; set; }
 
         /// <summary>
         /// Action执行情况
         /// </summary>
-        public List<UnillmStandardHumanActionExecuteResult> ActionExecuteResults { get; set; } = new();
+        public List<UnillmBodyHumanActionExecuteResult> ActionExecuteResults { get; set; } = new();
 
         /// <summary>
         /// 是否所有Action都执行成功
         /// </summary>
         public bool IsAllActionExecuteSuccess => IsSuccess && ActionExecuteResults.All(result => result.IsSuccess);
-        
+
         /// <summary>
         /// 是否所有Action都执行失败
         /// </summary>
         public bool IsAnyActionExecuteSuccess => IsSuccess && ActionExecuteResults.Any(result => result.IsSuccess);
     }
 
-    public delegate void UnillmOnStandardHumanTurnCompletedEventHandler(
-        UnillmStandardHuman human,
-        UnillmOnStandardHumanTurnCompletedEventArgs args);
+    public delegate void UnillmOnBodyHumanTurnCompletedEventHandler(
+        UnillmBodyHuman human,
+        UnillmOnBodyHumanTurnCompletedEventArgs args);
 
     /// <summary>
-    /// 标准Human实现，自动理解所携带的能力并使用。
+    /// 自动理解所携带的Body并使用。
     /// 单轮对话方式，即每回合只与Agent对话一次。
     /// </summary>
     /// <typeparam name="TInput"></typeparam>
     /// <typeparam name="TOutput"></typeparam>
-    public abstract class UnillmStandardHuman : UnillmCommonHuman<UnillmStandardHumanInput, UnillmStandardHumanOutput>
+    public abstract class UnillmBodyHuman : UnillmCommonHuman<UnillmBodyHumanInput, UnillmBodyHumanOutput>
     {
         /// <summary>
         /// 回合结束时调用
         /// </summary>
-        public event UnillmOnStandardHumanTurnCompletedEventHandler OnTurnCompleted;
+        public event UnillmOnBodyHumanTurnCompletedEventHandler OnTurnCompleted;
 
         /// <summary>
         /// 累计的输入
         /// </summary>
-        protected UnillmStandardHumanInput CachedInput { get; private set; } = new();
+        protected UnillmBodyHumanInput CachedInput { get; private set; } = new();
 
         /// <summary>
         /// 大脑正在思考说明正在回合中
@@ -194,12 +200,12 @@ namespace unillm
             return new UnillmCommmonAgent();
         }
 
-        protected override IUnillmBrain<UnillmStandardHumanInput, UnillmStandardHumanOutput> MakeBrain()
+        protected override IUnillmBrain<UnillmBodyHumanInput, UnillmBodyHumanOutput> MakeBrain()
         {
             var prompt = new UnillmStandardHumanPromptBuilder(this).Build();
-            var brain = new UnillmCommonBrain<UnillmStandardHumanInput, UnillmStandardHumanOutput>(new UnillmCommonBrainInitConfig(
-                MakeAgent(), 
-                prompt, 
+            var brain = new UnillmCommonBrain<UnillmBodyHumanInput, UnillmBodyHumanOutput>(new UnillmCommonBrainInitConfig(
+                MakeAgent(),
+                prompt,
                 false)
             );
             return brain;
@@ -207,14 +213,14 @@ namespace unillm
 
         protected override void OnSensed(IUnillmSense sense, UnillmOnSensedEventArgs args)
         {
-            CachedInput ??= new UnillmStandardHumanInput();
+            CachedInput ??= new UnillmBodyHumanInput();
 
             CachedInput.Sensed.Add(args.Sensed);
         }
 
-        protected override void OnThinkCompleted(UnillmCommonBrain<UnillmStandardHumanInput, UnillmStandardHumanOutput> brain, UnillmOnBrainThinkCompletedEventArgs<UnillmStandardHumanInput, UnillmStandardHumanOutput> args)
+        protected override void OnThinkCompleted(UnillmCommonBrain<UnillmBodyHumanInput, UnillmBodyHumanOutput> brain, UnillmOnBrainThinkCompletedEventArgs<UnillmBodyHumanInput, UnillmBodyHumanOutput> args)
         {
-            var onTurnCompletedArgs = new UnillmOnStandardHumanTurnCompletedEventArgs()
+            var onTurnCompletedArgs = new UnillmOnBodyHumanTurnCompletedEventArgs()
             {
                 ErrorReason = args.ErrorReason,
                 Input = args.Input,
@@ -237,7 +243,7 @@ namespace unillm
 
             foreach (var action in args.Output.Actions)
             {
-                var executeResult = new UnillmStandardHumanActionExecuteResult
+                var executeResult = new UnillmBodyHumanActionExecuteResult
                 {
                     Name = action.Name
                 };
@@ -246,27 +252,27 @@ namespace unillm
                 executeResult.Body = Bodies.FirstOrDefault(body => body.Name == action.Name);
                 if (executeResult.Body == null)
                 {
-                    executeResult.ErrorReasonType = UnillmStandardHumanActionExecuteErrorReason.BodyNotFound;
+                    executeResult.ErrorReasonType = UnillmBodyHumanActionExecuteErrorReason.BodyNotFound;
                     continue;
                 }
 
-                executeResult.Args = action.Get<UnillmBodyDoEventArgs>(executeResult.Body.ArgsType);
+                executeResult.Args = action.Get<UnillmBodyDoArgs>(executeResult.Body.ArgsType);
                 if (executeResult.Args == null)
                 {
-                    executeResult.ErrorReasonType = UnillmStandardHumanActionExecuteErrorReason.ArgsConvertFailed;
+                    executeResult.ErrorReasonType = UnillmBodyHumanActionExecuteErrorReason.ArgsConvertFailed;
                     continue;
                 }
 
                 if (!executeResult.Body.Do(executeResult.Args, executeResult.DoResult))
                 {
-                    executeResult.ErrorReasonType = UnillmStandardHumanActionExecuteErrorReason.BodyDoFailed;
+                    executeResult.ErrorReasonType = UnillmBodyHumanActionExecuteErrorReason.BodyDoFailed;
                 }
             }
 
             OnTurnCompleted?.Invoke(this, onTurnCompletedArgs);
         }
 
-        protected virtual bool CheckArgs(UnillmOnBrainThinkCompletedEventArgs<UnillmStandardHumanInput, UnillmStandardHumanOutput> args, out string reason)
+        protected virtual bool CheckArgs(UnillmOnBrainThinkCompletedEventArgs<UnillmBodyHumanInput, UnillmBodyHumanOutput> args, out string reason)
         {
             reason = null;
             return true;
@@ -275,7 +281,7 @@ namespace unillm
         /// <summary>
         /// 开始回合
         /// </summary>
-        public virtual bool StartTurn(UnillmStandardHumanStartTurnArgs startTurnArgs = null)
+        public virtual bool StartTurn(UnillmBodyHumanStartTurnArgs startTurnArgs = null)
         {
             if (IsOnTurn)
             {
@@ -283,11 +289,11 @@ namespace unillm
                 return false;
             }
 
-            startTurnArgs ??= new UnillmStandardHumanStartTurnArgs();
+            startTurnArgs ??= new UnillmBodyHumanStartTurnArgs();
 
             // 设置输入参数
             CachedInput = startTurnArgs.OverrideInput ?? CachedInput;
-            CachedInput ??= new UnillmStandardHumanInput();
+            CachedInput ??= new UnillmBodyHumanInput();
             CachedInput.Target = startTurnArgs.Target;
 
             if (Brain.Think(CachedInput))

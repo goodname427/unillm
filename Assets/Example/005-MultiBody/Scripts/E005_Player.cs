@@ -9,7 +9,7 @@ namespace unillm.Example
 {
     class E005_Player : MonoBehaviour
     {
-        public class Human : UnillmStandardHuman
+        public class Human : UnillmBodyHuman
         {
             public E005_Player Outer;
             public E005_CardManager HandCards { get; } = new();
@@ -61,7 +61,7 @@ namespace unillm.Example
                 yield return E005_GameManager.Instance;
             }
 
-            protected override bool CheckArgs(UnillmOnBrainThinkCompletedEventArgs<UnillmStandardHumanInput, UnillmStandardHumanOutput> args, out string reason)
+            protected override bool CheckArgs(UnillmOnBrainThinkCompletedEventArgs<UnillmBodyHumanInput, UnillmBodyHumanOutput> args, out string reason)
             {
                 if (args.Output.Actions.Length != 1)
                 {
@@ -122,7 +122,7 @@ namespace unillm.Example
             return AgentDescription;
         }
 
-        private void OnHumanTurnCompleted(UnillmStandardHuman human, UnillmOnStandardHumanTurnCompletedEventArgs args)
+        private void OnHumanTurnCompleted(UnillmBodyHuman human, UnillmOnBodyHumanTurnCompletedEventArgs args)
         {
             // 判断是否失败并获取对应的失败理由
             var reasonBuilder = new StringBuilder();
@@ -147,7 +147,7 @@ namespace unillm.Example
             // 如果失败则需要重新进行操作
             if (failed)
             {
-                Delay(() => _human.StartTurn(new UnillmStandardHumanStartTurnArgs
+                Delay(() => _human.StartTurn(new UnillmBodyHumanStartTurnArgs
                 {
                     Target = $"[系统] 由于以下原因:\n{reasonBuilder}\n请你重新选择操作",
                     OverrideInput = args.Input
@@ -168,7 +168,7 @@ namespace unillm.Example
             OnTurnStart?.Invoke(this);
 
             _human.HandCards.SensedCard();
-            _human.StartTurn(new UnillmStandardHumanStartTurnArgs
+            _human.StartTurn(new UnillmBodyHumanStartTurnArgs
             {
                 Target = "轮到你的回合了"
             });

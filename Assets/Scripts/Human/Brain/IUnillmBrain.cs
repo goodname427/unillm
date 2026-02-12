@@ -16,7 +16,7 @@ namespace unillm
     /// </summary>
     /// <typeparam name="TInput"></typeparam>
     /// <typeparam name="TOutput"></typeparam>
-    public interface IUnillmBrain<TInput, TOutput> : IUnillmEquipable<TInput, TOutput> where TInput : new() where TOutput : new()
+    public interface IUnillmBrain<TInput, TOutput> : IUnillmHumanEquipable<TInput, TOutput> where TInput : new() where TOutput : new()
     {
         /// <summary>
         /// 思考结束时调用

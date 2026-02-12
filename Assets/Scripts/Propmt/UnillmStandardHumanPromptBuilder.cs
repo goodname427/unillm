@@ -11,9 +11,9 @@ namespace unillm
         /// <summary>
         /// 提示词背景，会原封不同的放置在提示词最开始部分
         /// </summary>
-        public UnillmStandardHuman Human { get; set; }
+        public UnillmBodyHuman Human { get; set; }
 
-        public UnillmStandardHumanPromptBuilder(UnillmStandardHuman human)
+        public UnillmStandardHumanPromptBuilder(UnillmBodyHuman human)
         {
             Human = human;
         }
@@ -33,7 +33,7 @@ namespace unillm
                 bodyPropmt.AppendLine(new UnillmBodyPropmtBuilder(body).Build());
             }
 
-            var inOutPropmt = new UnillmInOutPropmtBuilder<UnillmStandardHumanInput, UnillmStandardHumanOutput>().Build();
+            var inOutPropmt = new UnillmInOutPropmtBuilder<UnillmBodyHumanInput, UnillmBodyHumanOutput>().Build();
             
             return $@"
 {Human.MakeBackground()}

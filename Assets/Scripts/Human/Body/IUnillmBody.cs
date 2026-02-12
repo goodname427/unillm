@@ -2,11 +2,17 @@ using System;
 
 namespace unillm
 {
-    public class UnillmBodyDoEventArgs : EventArgs
+    /// <summary>
+    /// 动作执行参数
+    /// </summary>
+    public class UnillmBodyDoArgs
     {
         
     }
 
+    /// <summary>
+    /// 动作执行结果
+    /// </summary>
     public class UnillmBodyDoResult : UnillmFuctionalEventArgs
     {
 
@@ -15,7 +21,7 @@ namespace unillm
     /// <summary>
     /// 能够执行某种任务
     /// </summary>
-    public interface IUnillmBody : IUnillmEquipable
+    public interface IUnillmBody : IUnillmHumanEquipable
     {
         /// <summary>
         /// 用于标识该Body
@@ -36,14 +42,14 @@ namespace unillm
         /// 执行某一项任务
         /// </summary>
         /// <returns></returns>
-        bool Do(UnillmBodyDoEventArgs eventArgs, UnillmBodyDoResult result);
+        bool Do(UnillmBodyDoArgs eventArgs, UnillmBodyDoResult result);
     }
 
-    public interface IUnillmBody<TDoArgs> : IUnillmBody where TDoArgs : class
+    public interface IUnillmBody<TDoArgs> : IUnillmBody where TDoArgs : UnillmBodyDoArgs
     {
         Type IUnillmBody.ArgsType => typeof(TDoArgs);
 
-        bool IUnillmBody.Do(UnillmBodyDoEventArgs eventArgs, UnillmBodyDoResult result)
+        bool IUnillmBody.Do(UnillmBodyDoArgs eventArgs, UnillmBodyDoResult result)
         {
             return Do(eventArgs as TDoArgs, result);
         }

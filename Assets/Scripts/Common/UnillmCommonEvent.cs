@@ -3,7 +3,7 @@ using System;
 namespace unillm
 {
     /// <summary>
-    /// 函数型事件，该类型的事件主要用于延迟返回一个函数的结果，无论成功与否都一定会调用
+    /// 用于返回一个函数的执行情况
     /// </summary>
     public class UnillmFuctionalEventArgs : EventArgs
     {

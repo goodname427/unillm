@@ -12,7 +12,7 @@ namespace unillm
     /// <summary>
     /// 能够感知某些信息
     /// </summary>
-    public interface IUnillmSense : IUnillmEquipable
+    public interface IUnillmSense : IUnillmHumanEquipable
     {
         /// <summary>
         /// 感知到任何事情时通知人类

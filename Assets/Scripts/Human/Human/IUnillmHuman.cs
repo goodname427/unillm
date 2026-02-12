@@ -2,13 +2,21 @@ using System.Collections.Generic;
 
 namespace unillm
 {
-    public interface IUnillmEquipable
+    /// <summary>
+    /// 可以被Human装备的对象
+    /// </summary>
+    public interface IUnillmHumanEquipable
     {
         void OnEquipped<TInput, TOutput>(IUnillmHuman<TInput, TOutput> human) where TInput : new() where TOutput : new() { }
         void OnUnequipped<TInput, TOutput>(IUnillmHuman<TInput, TOutput> human) where TInput : new() where TOutput : new() { }
     }
 
-    public interface IUnillmEquipable<TInput, TOutput> where TInput : new() where TOutput : new()
+    /// <summary>
+    /// 可以被Human装备的对象
+    /// </summary>
+    /// <typeparam name="TInput"></typeparam>
+    /// <typeparam name="TOutput"></typeparam>
+    public interface IUnillmHumanEquipable<TInput, TOutput> where TInput : new() where TOutput : new()
     {
         void OnEquipped(IUnillmHuman<TInput, TOutput> human);
         void OnUnequipped(IUnillmHuman<TInput, TOutput> human);

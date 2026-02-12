@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace unillm.Example
 {
-    class E005_CardEventArgs : UnillmBodyDoEventArgs
+    class E005_CardEventArgs : UnillmBodyDoArgs
     {
         [UnillmPropmtDescription("¿Ì”…")]
         public string Reason = "";

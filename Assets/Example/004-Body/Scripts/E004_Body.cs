@@ -18,7 +18,7 @@ namespace unillm.Example
             Right
         }
 
-        private class MoveArgs : UnillmBodyDoEventArgs
+        private class MoveArgs : UnillmBodyDoArgs
         {
             [UnillmPropmtDescription("要移动的方向")]
             public MoveDirection Direction;
@@ -62,7 +62,7 @@ namespace unillm.Example
             }
         }
 
-        private class Human : UnillmStandardHuman
+        private class Human : UnillmBodyHuman
         {
             public List<IUnillmBody> InitBodies = new();
             public List<IUnillmSense> InitSenses = new();
@@ -171,7 +171,7 @@ namespace unillm.Example
             return sensed.ToString();
         }
 
-        private void OnTurnCompleted(UnillmStandardHuman human, UnillmOnStandardHumanTurnCompletedEventArgs args)
+        private void OnTurnCompleted(UnillmBodyHuman human, UnillmOnBodyHumanTurnCompletedEventArgs args)
         {
             StartCoroutine(StartTurn());
         }
