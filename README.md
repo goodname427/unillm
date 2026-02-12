@@ -7,3 +7,11 @@ a framework to use llm for unity
 	- 简要配置：框架默认使用qwen大模型，你只需要设置对应的环境变量（QWEN_API_KEY = YOUR_KEY，注意是用户的环境变量而非系统的环境变量）即可使用。
 	- 复杂配置：你可以修改UnillmCommonAgentModelConfig的默认值，或者在创建Agent的时候传入自己想要的配置
 	- 自定义：你可以自定义所需的Agent，只需要实现IUnillmAgent接口即可
+
+
+# how to work
+
+本框架主要可以分为三层  
+1. Agent：负责直接与大模型进行对话
+2. Brain：负责将游戏中的数据以标准输入传递给大模型，并将大模型的标准输出解析为游戏中的数据
+3. Human：负责收集游戏中的数据，在合适实际传递给Brain，然后再将Brain的返回结果反馈到游戏中。
