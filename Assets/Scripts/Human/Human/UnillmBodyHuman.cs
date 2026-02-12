@@ -165,6 +165,7 @@ namespace unillm
     /// <summary>
     /// 自动理解所携带的Body并使用。
     /// 单轮对话方式，即每回合只与Agent对话一次。
+    /// Gameplay => Sense => Brain Input => Brain => Brain Out => Body => Gameplay
     /// </summary>
     /// <typeparam name="TInput"></typeparam>
     /// <typeparam name="TOutput"></typeparam>
@@ -234,7 +235,7 @@ namespace unillm
             }
 
             // 子类预留接口
-            if (!CheckArgs(args, out var reason))
+            if (!CheckBrainThinkArgs(args, out var reason))
             {
                 onTurnCompletedArgs.ErrorReason = reason;
                 OnTurnCompleted?.Invoke(this, onTurnCompletedArgs);
@@ -272,7 +273,13 @@ namespace unillm
             OnTurnCompleted?.Invoke(this, onTurnCompletedArgs);
         }
 
-        protected virtual bool CheckArgs(UnillmOnBrainThinkCompletedEventArgs<UnillmBodyHumanInput, UnillmBodyHumanOutput> args, out string reason)
+        /// <summary>
+        /// 检查Brain思考的输入
+        /// </summary>
+        /// <param name="args"></param>
+        /// <param name="reason"></param>
+        /// <returns></returns>
+        protected virtual bool CheckBrainThinkArgs(UnillmOnBrainThinkCompletedEventArgs<UnillmBodyHumanInput, UnillmBodyHumanOutput> args, out string reason)
         {
             reason = null;
             return true;

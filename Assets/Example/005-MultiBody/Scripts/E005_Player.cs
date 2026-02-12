@@ -61,7 +61,7 @@ namespace unillm.Example
                 yield return E005_GameManager.Instance;
             }
 
-            protected override bool CheckArgs(UnillmOnBrainThinkCompletedEventArgs<UnillmBodyHumanInput, UnillmBodyHumanOutput> args, out string reason)
+            protected override bool CheckBrainThinkArgs(UnillmOnBrainThinkCompletedEventArgs<UnillmBodyHumanInput, UnillmBodyHumanOutput> args, out string reason)
             {
                 if (args.Output.Actions.Length != 1)
                 {
@@ -69,7 +69,7 @@ namespace unillm.Example
                     return false;
                 }
 
-                return base.CheckArgs(args, out reason);
+                return base.CheckBrainThinkArgs(args, out reason);
             }
         }
 

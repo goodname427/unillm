@@ -71,7 +71,7 @@ namespace unillm
                 return;
             }
 
-            UnillmLogger.Log($"The agent propmt is {systemPropmt}");
+            UnillmLogger.Log($"The agent propmt is:\n {systemPropmt}");
 
             HasInit = true;
             PushMessage(UnillmMessage.MakeSystemMessage(systemPropmt));

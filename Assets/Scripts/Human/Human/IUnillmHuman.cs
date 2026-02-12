@@ -33,7 +33,7 @@ namespace unillm
         /// 大脑
         /// </summary>
         IUnillmBrain<TInput, TOutput> Brain { get; }
-        
+
         /// <summary>
         /// 感知
         /// </summary>
@@ -43,5 +43,10 @@ namespace unillm
         /// 身体
         /// </summary>
         IReadOnlyList<IUnillmBody> Bodies { get; }
+        
+        /// <summary>
+        /// 记忆
+        /// </summary>
+        IUnillmMemoryContainer Memories { get; }
     }
 }
