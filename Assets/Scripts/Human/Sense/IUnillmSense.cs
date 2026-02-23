@@ -4,7 +4,16 @@ namespace unillm
 {
     public class UnillmOnSensedEventArgs : EventArgs
     {
-        public string Sensed;
+        [UnillmPropmtDescription("The sensed timestamp in seconds")]
+        public long Timestamp;
+
+        [UnillmPropmtDescription("The sensed information")]
+        public string Sensed = "";
+
+        public UnillmOnSensedEventArgs()
+        {
+            Timestamp = DateTime.Now.ToUnixTimestamp();
+        }
     }
 
     public delegate void OnUnillmSensedEventHandler(IUnillmSense sense, UnillmOnSensedEventArgs args);

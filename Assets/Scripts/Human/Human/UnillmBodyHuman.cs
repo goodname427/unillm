@@ -10,10 +10,10 @@ namespace unillm
     public class UnillmBodyHumanInput
     {
         [UnillmPropmtDescription("The target you should got")]
-        public string Target;
+        public string Target = "";
 
         [UnillmPropmtDescription("The sensed information")]
-        public List<string> Sensed = new();
+        public List<UnillmOnSensedEventArgs> Sensed = new() { new() };
     }
 
     /// <summary>
@@ -216,7 +216,7 @@ namespace unillm
         {
             CachedInput ??= new UnillmBodyHumanInput();
 
-            CachedInput.Sensed.Add(args.Sensed);
+            CachedInput.Sensed.Add(args);
         }
 
         protected override void OnThinkCompleted(UnillmCommonBrain<UnillmBodyHumanInput, UnillmBodyHumanOutput> brain, UnillmOnBrainThinkCompletedEventArgs<UnillmBodyHumanInput, UnillmBodyHumanOutput> args)
